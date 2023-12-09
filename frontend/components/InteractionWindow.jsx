@@ -37,7 +37,7 @@ export default function InteractionWindow() {
     const commitment = result[1]
     const nullifierHash = result[2]
 
-    const value = BigInt("100000000000000000");     // 0.1 ETH
+    const value = ethers.utils.parseEther("0.1");     // 0.1 ETH
 
     try {
       const txHash = await walletClient.writeContract({

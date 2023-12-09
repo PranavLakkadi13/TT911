@@ -15,9 +15,8 @@ const PolygonScan_API_KEY = process.env.PolygonScan_API_KEY;
 const Etherscan_API_KEY = process.env.Etherscan_API_KEY;
 const Coinmarketcap_API_KEY = process.env.Coinmarketcap_API_KEY;
 const RPC_URL_Alchemy_MAINNET = process.env.RPC_URL_Alchemy_MAINNET;
+const RPC_URL_QUickNodeScroll = process.env.RPC_URL_QUickNodeScroll;
 
-const Private_Key_G = process.env.Private_Key_G;
-const RPC_URL_G = process.env.RPC_URL_G;
 
 module.exports = {
   defaultNetwork: "hardhat",
@@ -41,6 +40,12 @@ module.exports = {
       chainId: 80001,
       blockConfirmations: 3,
     },
+    scrollSepolia : {
+      url: RPC_URL_QUickNodeScroll,
+      accounts: [Private_Key],
+      // chainId: 534351,
+      blockConfirmations: 3
+    }
   },
   solidity: {
     compilers: [

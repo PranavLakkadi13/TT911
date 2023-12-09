@@ -1,7 +1,7 @@
 "use client"
 
 import InteractionWindow from "@/components/InteractionWindow.jsx";
-import Navbar from "@/components/Navbar";
+import Navbar from "../components/NavBar.jsx";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
