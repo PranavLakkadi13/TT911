@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import {Hasher} from "./Hasher.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IVerifier {
     function verifyProof(
@@ -30,8 +31,8 @@ contract Tornado is ReentrancyGuard {
     Hasher public hasher;
     address public verifier;
 
-    uint8 public treeLevel = 10;
-    uint256 public denomination = 0.1 ether;
+    uint8 public constant treeLevel = 10;
+    uint256 public constant denomination = 0.1 ether;
     uint256 public nextLeafIndex;
 
     mapping(uint256 root => bool isKnown) public knownRoots;
