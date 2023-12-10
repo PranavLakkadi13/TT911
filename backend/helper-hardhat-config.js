@@ -18,7 +18,7 @@ const networkConfig = {
   
   const developmentChains = ["hardhat", "localhost"];
   const VERIFICATION_BLOCK_CONFIRMATIONS = 6;
-  const LoanPercent = 1e2
+  const LoanPercent = 1e15
   
   module.exports = {
     networkConfig,

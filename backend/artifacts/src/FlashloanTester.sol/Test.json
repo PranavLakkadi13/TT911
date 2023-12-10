@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Test",
+  "sourceName": "src/FlashloanTester.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122074851204d7af6bbcda8c80c793bce16f3f1efe647179c05558c5de25ee00eacb64736f6c63430008140033",
+  "deployedBytecode": "0x6080604052600080fdfea264697066735822122074851204d7af6bbcda8c80c793bce16f3f1efe647179c05558c5de25ee00eacb64736f6c63430008140033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

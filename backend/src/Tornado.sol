@@ -4,9 +4,8 @@ pragma solidity ^0.8.0;
 
 import {Hasher} from "./Hasher.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./IWETH9.sol";
 import "./IFlashLoanReceiver.sol";
-
+import "./IWETH9.sol";
 
 interface IVerifier {
     function verifyProof(
@@ -34,16 +33,19 @@ contract Tornado is ReentrancyGuard {
     address public verifier;
 
     uint8 public treeLevel = 10;
-    uint256 public denomination = 10**17;
+    uint256 public denomination = 0.1 ether;
     uint256 public nextLeafIndex;
-    address payable weth;
-    uint256 immutable loanPercent;
-    uint256 internal constant PERCENTAGE_FACTOR = 1e4;
-    uint256 feeCollected;
+    uint256 loanPercent;
     address payable relayer;
-
+    address payable weth;
+    uint256 internal constant PERCENTAGE_FACTOR = 1e4;
     // Half percentage factor (50.00%)
     uint256 internal constant HALF_PERCENTAGE_FACTOR = 0.5e4;
+
+    mapping(uint256 root => bool isKnown) public knownRoots;
+    mapping(uint8 level => uint256 levelHash) public lastLevelHash;
+    mapping(uint256 nullifier => bool hasBeenUsed) public nullifiers;
+    mapping(uint256 commitment => bool isRegistered) public commitments;
 
     event FlashLoanEvent(
         address indexed target,
@@ -52,22 +54,18 @@ contract Tornado is ReentrancyGuard {
         uint256 premium
     );
 
-    mapping(uint256 root => bool isKnown) public knownRoots;
-    mapping(uint8 level => uint256 levelHash) public lastLevelHash;
-    mapping(uint256 nullifier => bool hasBeenUsed) public nullifiers;
-    mapping(uint256 commitment => bool isRegistered) public commitments;
-
-    constructor(address _hasher, address _verifier,address payable _weth, uint256 _loanPercent, address payable _relayer){
+    constructor(address _hasher, address _verifier, address payable _relayer, uint256 _loanPercent, address payable _weth) {
         hasher = Hasher(_hasher);
         verifier = _verifier;
-        weth = _weth;
-        relayer = _relayer;
         loanPercent = _loanPercent;
+        relayer = _relayer;
+        weth = _weth;
     }
 
     function deposit(uint256 _commitment) external payable nonReentrant {
-        require(msg.value == 0, "ETH value is supposed to be 0 for ERC20 instance");
-
+        if (msg.value != denomination) {
+            revert WrongAmountDeposited(msg.value);
+        }
         if (commitments[_commitment]) {
             revert CommitmentAlreadyRegistered(_commitment);
         }
@@ -115,8 +113,6 @@ contract Tornado is ReentrancyGuard {
         ++nextLeafIndex;
         commitments[_commitment] = true;
 
-        IWETH9(weth).transferFrom(msg.sender, address(this), denomination);
-
         emit Deposit(newRoot, hashPairings, hashDirections);
     }
 
@@ -146,7 +142,7 @@ contract Tornado is ReentrancyGuard {
             revert InvalidProof();
         }
         nullifiers[nullifierHash] = true;
-        bool paymentOk = IWETH9(weth).transfer(msg.sender, denomination);
+        (bool paymentOk, ) = msg.sender.call{value: denomination}("");
         if(!paymentOk){
             revert PaymentFailed();
         }
@@ -176,55 +172,56 @@ contract Tornado is ReentrancyGuard {
     }
 
     function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256 result) {
-    // to avoid overflow, value <= (type(uint256).max - HALF_PERCENTAGE_FACTOR) / percentage
-    assembly {
-      if iszero(
-        or(
-          iszero(percentage),
-          iszero(gt(value, div(sub(not(0), HALF_PERCENTAGE_FACTOR), percentage)))
-        )
-      ) {
-        revert(0, 0)
+        // to avoid overflow, value <= (type(uint256).max - HALF_PERCENTAGE_FACTOR) / percentage
+        assembly {
+          if iszero(
+            or(
+              iszero(percentage),
+              iszero(gt(value, div(sub(not(0), HALF_PERCENTAGE_FACTOR), percentage)))
+            )
+          ) {
+            revert(0, 0)
+          }
+    
+          result := div(add(mul(value, percentage), HALF_PERCENTAGE_FACTOR), PERCENTAGE_FACTOR)
+        }
       }
-
-      result := div(add(mul(value, percentage), HALF_PERCENTAGE_FACTOR), PERCENTAGE_FACTOR)
-    }
-  }
-
+    
     function executeFlashLoanSimple(
-        address receiverAddress,
-        uint256 amount
-    ) external {
-
-        IFlashLoanReceiver receiver = IFlashLoanReceiver(receiverAddress);
-        uint256 fee = percentMul(amount, loanPercent);
-        IWETH9(weth).transfer(receiverAddress, amount);
-
-        require(
-        receiver.executeOperation(
-            amount,
-            fee,
-            msg.sender
-        ),
-        "INVALID_FLASHLOAN_EXECUTOR_RETURN"
-        );
-
-        uint256 amountPlusPremium = amount + fee;
-
-        IWETH9(weth).transferFrom(
-            receiverAddress,
-            address(this),
-            amountPlusPremium
-        );
-
-        IWETH9(weth).withdraw(fee);
-        relayer.transfer(fee);
-        
-        emit FlashLoanEvent(
-            receiverAddress,
-            msg.sender,
-            amount,
-            fee
-        );
-    }
+            address payable receiverAddress,
+            uint256 amount
+        ) external {
+    
+            IFlashLoanReceiver receiver = IFlashLoanReceiver(receiverAddress);
+            uint256 fee =  loanPercent;
+            IWETH9(weth).deposit{value: amount}();
+            IWETH9(weth).transfer(receiverAddress, amount);
+    
+            require(
+            receiver.executeOperation(
+                amount,
+                fee,
+                msg.sender
+            ),
+            "INVALID_FLASHLOAN_EXECUTOR_RETURN"
+            );
+    
+            uint256 amountPlusPremium = amount + fee;
+    
+            IWETH9(weth).transferFrom(
+                receiverAddress,
+                address(this),
+                amountPlusPremium
+            );
+            
+            IWETH9(weth).withdraw(amountPlusPremium);
+            relayer.transfer(fee);
+            
+            emit FlashLoanEvent(
+                receiverAddress,
+                msg.sender,
+                amount,
+                fee
+            );
+        }
 }

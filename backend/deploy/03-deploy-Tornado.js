@@ -10,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const hasher = await deployments.get("Hasher");
   const veirifer = await deployments.get("Groth16Verifier");
 
-  const args = [hasher.address,veirifer.address,networkConfig[chainId]["weth"],LoanPercent,"0x6C55782683dA33FA742B71f89F0dF88fFcBD6F28"];
+  const args = [hasher.address,veirifer.address,"0x6C55782683dA33FA742B71f89F0dF88fFcBD6F28",LoanPercent,networkConfig[chainId]["weth"]];
 
   const Tornado = await deploy("Tornado", {
     from: deployer,
