@@ -171,22 +171,6 @@ contract Tornado is ReentrancyGuard {
         return hashes[index];
     }
 
-    function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256 result) {
-        // to avoid overflow, value <= (type(uint256).max - HALF_PERCENTAGE_FACTOR) / percentage
-        assembly {
-          if iszero(
-            or(
-              iszero(percentage),
-              iszero(gt(value, div(sub(not(0), HALF_PERCENTAGE_FACTOR), percentage)))
-            )
-          ) {
-            revert(0, 0)
-          }
-    
-          result := div(add(mul(value, percentage), HALF_PERCENTAGE_FACTOR), PERCENTAGE_FACTOR)
-        }
-      }
-    
     function executeFlashLoanSimple(
             address payable receiverAddress,
             uint256 amount
@@ -197,15 +181,15 @@ contract Tornado is ReentrancyGuard {
             IWETH9(weth).deposit{value: amount}();
             IWETH9(weth).transfer(receiverAddress, amount);
     
-            require(
+            // require(
             receiver.executeOperation(
                 amount,
                 fee,
                 msg.sender
-            ),
-            "INVALID_FLASHLOAN_EXECUTOR_RETURN"
             );
-    
+            // "INVALID_FLASHLOAN_EXECUTOR_RETURN"
+            // ); 
+
             uint256 amountPlusPremium = amount + fee;
     
             IWETH9(weth).transferFrom(
@@ -215,7 +199,8 @@ contract Tornado is ReentrancyGuard {
             );
             
             IWETH9(weth).withdraw(amountPlusPremium);
-            relayer.transfer(fee);
+            // (bool ok, ) = relayer.call{value: fee}("");
+            // require(ok, "Something went wrong");
             
             emit FlashLoanEvent(
                 receiverAddress,
@@ -224,4 +209,6 @@ contract Tornado is ReentrancyGuard {
                 fee
             );
         }
+
+        receive() external payable {}
 }

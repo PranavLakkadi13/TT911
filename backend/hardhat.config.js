@@ -40,11 +40,14 @@ module.exports = {
       chainId: 80001,
       blockConfirmations: 6,
     },
-    scrollSepolia : {
+    scrollTestnet : {
       url: RPC_URL_QUickNodeScroll,
       accounts: [Private_Key],
-      // chainId: 534351,
-      blockConfirmations: 6
+    },
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
+      accounts: [Private_Key],
+      chainId: 44787
     }
   },
   solidity: {

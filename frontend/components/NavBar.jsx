@@ -1,6 +1,6 @@
 "use client"
 
-import { sepolia } from 'viem/chains'
+import { scrollSepolia, sepolia } from 'viem/chains'
 import { useState } from "react"
 import { Web3Context } from "../context/Web3Context";
 import { useContext } from "react";
@@ -17,7 +17,10 @@ const Navbar = () => {
     const switchChain = async () => {
         setSwitchChainDisabled(true)
         try {
-            await walletClient.switchChain({ id: sepolia.id })
+            await walletClient.switchChain({ id: sepolia.id }) || 
+            await walletClient.switchChain({id: celo.id}) ||
+            await walletClient.switchChain({id: scrollSepolia.id}) ||
+            await walletClient.switchChain({id: scrollSepolia.id})
         } catch (error) {
             if(error.code === 4001){
                 toast.error('Network change rejected', {
@@ -38,7 +41,7 @@ const Navbar = () => {
     return(
         <div className="w-full bg-slate-600 flex">
             <h1 className="py-10 w-1/2 font-extrabold text-slate-200 text-4xl center pl-10">
-                Tornado Cash Clone
+                TT911
             </h1>
             {isAuthenticated
                 ? 
