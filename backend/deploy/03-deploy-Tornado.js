@@ -1,5 +1,5 @@
 const { network, ethers } = require("hardhat");
-const {developmentChains} = require("../helper-hardhat-config");
+const {developmentChains,networkConfig,LoanPercent} = require("../helper-hardhat-config");
 const {verify} = require("../utils/verify");
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -10,7 +10,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const hasher = await deployments.get("Hasher");
   const veirifer = await deployments.get("Groth16Verifier");
 
-  const args = [hasher.address,veirifer.address];
+  const args = [hasher.address,veirifer.address,networkConfig[chainId]["weth"],LoanPercent,"0x6C55782683dA33FA742B71f89F0dF88fFcBD6F28"];
 
   const Tornado = await deploy("Tornado", {
     from: deployer,

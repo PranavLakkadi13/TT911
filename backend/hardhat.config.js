@@ -32,19 +32,19 @@ module.exports = {
       url: RPC_URL_Alchemy_SEPOLIA,
       accounts: [Private_Key],
       chainId: 11155111,
-      blockConfirmations: 3,
+      blockConfirmations: 6,
     },
     polygon: {
       url: RPC_URL_POLYGON,
       accounts: [Private_Key],
       chainId: 80001,
-      blockConfirmations: 3,
+      blockConfirmations: 6,
     },
     scrollSepolia : {
       url: RPC_URL_QUickNodeScroll,
       accounts: [Private_Key],
       // chainId: 534351,
-      blockConfirmations: 3
+      blockConfirmations: 6
     }
   },
   solidity: {

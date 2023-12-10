@@ -37,7 +37,7 @@ export default function InteractionWindow() {
     const commitment = result[1]
     const nullifierHash = result[2]
 
-    const value = ethers.utils.parseEther("0.1");     // 0.1 ETH
+     // 0.1 ETH
 
     try {
       const txHash = await walletClient.writeContract({
@@ -45,8 +45,7 @@ export default function InteractionWindow() {
         address: contractAddress,
         abi: contractABI,
         functionName: "deposit",
-        args: [commitment],
-        value: value
+        args: [commitment]
       })
 
       await publicClient.waitForTransactionReceipt({ hash: txHash })
@@ -55,13 +54,17 @@ export default function InteractionWindow() {
         hash: txHash
       })
 
+      console.log(txHash)
+
+
       const decodedData = decodeEventLog({
         abi: contractABI,
         eventName: "Deposit",
         data: txReceipt.logs[0].data,
         topics: txReceipt.logs[0].topics
       })
-
+      
+      console.log(decodedData)
       const proofElements = {
         root: decodedData.args.root.toString(),
         nullifierHash: nullifierHash.toString(),
@@ -71,7 +74,7 @@ export default function InteractionWindow() {
         hashPairings: decodedData.args.hashPairings.map((num) => (num.toString())),
         hashDirections: decodedData.args.pairDirections
       }
-
+      console.log(proofElements)
       setProofString(btoa(JSON.stringify(proofElements)))
       toast.success('Your deposit has been executed successfully!', {
           position: toast.POSITION.TOP_RIGHT
